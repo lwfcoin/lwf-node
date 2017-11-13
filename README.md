@@ -30,7 +30,7 @@ git clone -b testnet https://github.com/lwfcoin/lwf-node.git
 
 ## Important
 Please open up ports 18124 and 18125 for mainnet <br>
-Please open up ports 18101 and 181012 for testnet
+Please open up ports 18101 and 18102 for testnet
 
 ## Authors
 - Jan <lepetitjan@icloud.com>
