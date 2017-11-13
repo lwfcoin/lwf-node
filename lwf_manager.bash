@@ -13,7 +13,7 @@ logfile=$root_path/logs/lwfcoin.log
 set_branch() {
   if [ "$(grep ""65dbdedb6c1c5853e7456bde7494a169abf27c99fefff956f8998d6b3c57f3cc $LWF_CONFIG )" ];then
     GIT_BRANCH="master"
-  elif [ "$(grep ""65dbdedb6c1c5853e7456bde7494a169abf27c99fefff956f8998d6b3c57f36a"" $LWF_CONFIG )" ];then
+  elif [ "$(grep ""8e7bf022716b18a3541cf4663c0a3d3b095a5860f6773ebdc90f48009946b570"" $LWF_CONFIG )" ];then
     GIT_BRANCH="testnet"
   else
     GIT_BRANCH="unknown"
