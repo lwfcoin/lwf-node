@@ -1,0 +1,11 @@
+require('./blockService.js');
+require('./clipboardService.js');
+require('./delegateService.js');
+require('./userService.js');
+require('./transactionsService.js');
+require('./multiService.js');
+require('./dappsService.js');
+require('./languageService.js');
+require('./feeService.js');
+require('./oxyService.js');
+require('./dposOfflineService.js');
