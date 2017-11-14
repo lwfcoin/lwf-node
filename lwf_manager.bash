@@ -125,7 +125,7 @@ download_blockchain() {
             echo "√ Blockchain snapshot downloaded successfully."
         fi
     else
-        echo -e "√ Using Local Snapshot."
+        echo -e "√ Using this Awesome Snapshot."
     fi
 }
 
