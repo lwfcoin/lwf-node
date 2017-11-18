@@ -1,5 +1,5 @@
 {
-  "port": 18101,
+  "port": 18124,
   "address": "0.0.0.0",
   "fileLogLevel": "info",
   "logFileName": "logs/lwf.log",
@@ -11,7 +11,7 @@
   "db": {
     "host": "localhost",
     "port": 5432,
-    "database": "lwf_testnet",
+    "database": "lwf_mainnet",
     "user": "lwf",
     "password": "password",
     "poolSize": 95,
@@ -32,8 +32,7 @@
     "access": {
       "public": true,
       "whiteList": [
-        "127.0.0.1",
-        "165.227.172.180"
+        "127.0.0.1"
       ]
     },
     "options": {
@@ -50,23 +49,23 @@
     "list": [
       {
         "ip": "46.101.85.231",
-        "port": 18101
+        "port": 18124
       },
       {
         "ip": "128.199.116.31",
-        "port": 18101
+        "port": 18124
       },
       {
         "ip": "178.62.214.30",
-        "port": 18101
+        "port": 18124
       },
       {
         "ip": "138.197.204.108",
-        "port": 18101
+        "port": 18124
       },
       {
         "ip": "104.236.67.20",
-        "port": 18101
+        "port": 18124
       }
 
     ],
@@ -121,5 +120,5 @@
     "masterpassword": "r7iQKsQwy6zJ",
     "autoexec": []
   },
-  "nethash": "8e7bf022716b18a3541cf4663c0a3d3b095a5860f6773ebdc90f48009946b570"
+  "nethash": "4c1170a3esb03f961e5e3f7cedcd25563f0a46ec4aa3342715d09c47b398ea19"
 }
