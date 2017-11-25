@@ -6,7 +6,7 @@ BEGIN;
 
 /* Tables */
 CREATE TABLE IF NOT EXISTS "migrations"(
-  "id" VARCHAR(22) NOT NULL PRIMARY KEY,
+  "id" VARCHAR(24) NOT NULL PRIMARY KEY,
   "name" TEXT NOT NULL
 );
 
@@ -36,8 +36,8 @@ CREATE TABLE IF NOT EXISTS "trs"(
   "type" SMALLINT NOT NULL,
   "timestamp" INT NOT NULL,
   "senderPublicKey" bytea NOT NULL,
-  "senderId" VARCHAR(22) NOT NULL,
-  "recipientId" VARCHAR(22),
+  "senderId" VARCHAR(24) NOT NULL,
+  "recipientId" VARCHAR(24),
   "amount" BIGINT NOT NULL,
   "fee" BIGINT NOT NULL,
   "signature" bytea NOT NULL,
