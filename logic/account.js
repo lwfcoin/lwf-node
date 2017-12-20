@@ -42,7 +42,7 @@ function Account (db, schema, logger, cb) {
 	 * @property {boolean} secondSignature
 	 * @property {boolean} u_secondSignature
 	 * @property {string} u_username
-	 * @property {address} address - Uppercase, between 1 and 22 chars.
+	 * @property {address} address - Uppercase, between 1 and 24 chars.
 	 * @property {publicKey} publicKey
 	 * @property {publicKey} secondPublicKey
 	 * @property {number} balance - Between 0 and totalAmount from constants.
@@ -131,7 +131,7 @@ function Account (db, schema, logger, cb) {
 				type: 'string',
 				case: 'upper',
 				minLength: 1,
-				maxLength: 22
+				maxLength: 24
 			},
 			conv: String,
 			immutable: true,

@@ -6,7 +6,7 @@
   "logAppend": false,
   "consoleLogLevel": "log",
   "trustProxy": false,
-  "topAccounts": false,
+  "topAccounts": true,
   "cacheEnabled": false,
   "db": {
     "host": "localhost",
@@ -67,7 +67,6 @@
         "ip": "104.236.67.20",
         "port": 18124
       }
-
     ],
     "access": {
       "blackList": []
@@ -94,8 +93,7 @@
   },
   "forging": {
     "force": false,
-    "secret": [
-    ],
+    "secret": [],
     "access": {
       "whiteList": [
         "127.0.0.1"
@@ -109,7 +107,7 @@
   "ssl": {
     "enabled": false,
     "options": {
-      "port": 10001,
+      "port": 18102,
       "address": "0.0.0.0",
       "key": "./ssl/lwf.key",
       "cert": "./ssl/lwf.crt"
