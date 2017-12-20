@@ -6,7 +6,7 @@
   "logAppend": false,
   "consoleLogLevel": "log",
   "trustProxy": false,
-  "topAccounts": true,
+  "topAccounts": false,
   "cacheEnabled": false,
   "db": {
     "host": "localhost",
@@ -45,26 +45,22 @@
     }
   },
   "peers": {
-    "enabled": true,
+    "enabled": false,
     "list": [
       {
-        "ip": "46.101.85.231",
+        "ip": "51.254.210.64",
         "port": 18124
       },
       {
-        "ip": "128.199.116.31",
+        "ip": "51.254.210.69",
         "port": 18124
       },
       {
-        "ip": "178.62.214.30",
+        "ip": "139.59.179.52",
         "port": 18124
       },
       {
-        "ip": "138.197.204.108",
-        "port": 18124
-      },
-      {
-        "ip": "104.236.67.20",
+        "ip": "146.185.158.174",
         "port": 18124
       }
     ],
@@ -92,8 +88,9 @@
     "maxTxsPerQueue": 1000
   },
   "forging": {
-    "force": false,
-    "secret": [],
+    "force": true,
+    "secret": [
+    ],
     "access": {
       "whiteList": [
         "127.0.0.1"
@@ -107,7 +104,7 @@
   "ssl": {
     "enabled": false,
     "options": {
-      "port": 18102,
+      "port": 10001,
       "address": "0.0.0.0",
       "key": "./ssl/lwf.key",
       "cert": "./ssl/lwf.crt"
@@ -118,5 +115,5 @@
     "masterpassword": "r7iQKsQwy6zJ",
     "autoexec": []
   },
-  "nethash": "4c1170a3esb03f961e5e3f7cedcd25563f0a46ec4aa3342715d09c47b398ea19"
+  "nethash": "704f232786a9bff25d0630c06abbc34957448ba6309d6dcef949cf9a6f43954a"
 }

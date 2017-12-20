@@ -11,7 +11,7 @@ mkdir -p $root_path/logs
 logfile=$root_path/logs/lwfcoin.log
 
 set_branch() {
-  if [ "$(grep "65dbdedb6c1c5853e7456bde7494a169abf27c99fefff956f8998d6b3c57f3cc" $LWF_CONFIG )" ];then
+  if [ "$(grep "704f232786a9bff25d0630c06abbc34957448ba6309d6dcef949cf9a6f43954a" $LWF_CONFIG )" ];then
     GIT_BRANCH="master"
   elif [ "$(grep "c16656e85880df9a41abed0aa13b2987b0d853adadc91cbc7e5c8332ea37ccc9" $LWF_CONFIG )" ];then
     GIT_BRANCH="testnet"
