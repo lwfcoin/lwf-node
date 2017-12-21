@@ -1,0 +1,27 @@
+NOTICE:  view "blocks_list" does not exist, skipping
+NOTICE:  view "full_blocks_list" does not exist, skipping
+NOTICE:  view "trs_list" does not exist, skipping
+NOTICE:  trigger "protect_mem_accounts" for relation "mem_accounts" does not exist, skipping
+NOTICE:  function revert_mem_account() does not exist, skipping
+NOTICE:  ALTER TABLE / ADD CONSTRAINT USING INDEX will rename index "peers_unique" to "address_unique"
+NOTICE:  function rounds_fees_init() does not exist, skipping
+NOTICE:  trigger "rounds_fees_delete" for relation "blocks" does not exist, skipping
+NOTICE:  function round_fees_delete() does not exist, skipping
+NOTICE:  trigger "rounds_fees_insert" for relation "blocks" does not exist, skipping
+NOTICE:  function round_fees_insert() does not exist, skipping
+NOTICE:  Calculating fees for rounds, please wait...
+NOTICE:  relation "mem_accounts" already exists, skipping
+NOTICE:  relation "mem_accounts_balance" already exists, skipping
+NOTICE:  relation "mem_round" already exists, skipping
+NOTICE:  relation "mem_round_address" already exists, skipping
+NOTICE:  relation "mem_round_round" already exists, skipping
+NOTICE:  relation "mem_accounts2delegates" already exists, skipping
+NOTICE:  relation "mem_accounts2delegates_accountId" already exists, skipping
+NOTICE:  relation "mem_accounts2u_delegates" already exists, skipping
+NOTICE:  relation "mem_accounts2u_delegates_accountId" already exists, skipping
+NOTICE:  relation "mem_accounts2multisignatures" already exists, skipping
+NOTICE:  relation "mem_accounts2multisignatures_accountId" already exists, skipping
+NOTICE:  relation "mem_accounts2u_multisignatures" already exists, skipping
+NOTICE:  relation "mem_accounts2u_multisignatures_accountId" already exists, skipping
+NOTICE:  table "mem_round_snapshot" does not exist, skipping
+NOTICE:  table "mem_votes_snapshot" does not exist, skipping
