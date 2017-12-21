@@ -45,7 +45,7 @@
     }
   },
   "peers": {
-    "enabled": true,
+    "enabled": false,
     "list": [
       {
         "ip": "51.254.210.64",
@@ -88,7 +88,7 @@
     "maxTxsPerQueue": 1000
   },
   "forging": {
-    "force": false,
+    "force": true,
     "secret": [
     ],
     "access": {
