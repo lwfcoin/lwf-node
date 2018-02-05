@@ -10,6 +10,7 @@ module.exports = {
 	maximumVotes: 51,
 	addressLength: 208,
 	blockHeaderLength: 248,
+	blockSlotWindow: 5, // window of which a slot could be accepted.
 	blockTime: 15000,
 	blockReceiptTimeOut: 30*2, // 2 blocks
 	confirmationLength: 77,
