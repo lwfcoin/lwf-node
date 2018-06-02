@@ -1025,7 +1025,8 @@ Transaction.prototype.schema = {
 			type: 'integer'
 		},
 		timestamp: {
-			type: 'integer'
+			type: 'integer',
+			minimum: 0
 		},
 		senderPublicKey: {
 			type: 'string',
