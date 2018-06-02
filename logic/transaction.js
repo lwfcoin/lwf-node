@@ -425,6 +425,9 @@ Transaction.prototype.verify = function (trs, sender, height /*requester*/, cb) 
 	var valid = false;
 	var err = null;
 
+	const INT_32_MIN = -2147483648;
+	const INT_32_MAX = 2147483647;
+
 //	if (typeof requester === 'function') {
 //		cb = requester;
 //	}
@@ -595,6 +598,10 @@ Transaction.prototype.verify = function (trs, sender, height /*requester*/, cb) 
 	}
 
 	// Check timestamp
+	if (trs.timestamp < INT_32_MIN || trs.timestamp > INT_32_MAX) {
+		return setImmediate(cb, 'Invalid transaction timestamp. Timestamp is not in the int32 range');
+	}
+
 	if (slots.getSlotNumber(trs.timestamp) > slots.getSlotNumber()) {
 		return setImmediate(cb, 'Invalid transaction timestamp. Timestamp is in the future');
 	}
