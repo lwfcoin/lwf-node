@@ -1,17 +1,17 @@
 {
-  "port": 18124,
+  "port": 18101,
   "address": "0.0.0.0",
   "fileLogLevel": "info",
   "logFileName": "logs/lwf.log",
   "logAppend": false,
   "consoleLogLevel": "log",
   "trustProxy": false,
-  "topAccounts": false,
+  "topAccounts": true,
   "cacheEnabled": false,
   "db": {
     "host": "localhost",
     "port": 5432,
-    "database": "lwf_mainnet",
+    "database": "lwf_testnet",
     "user": "lwf",
     "password": "password",
     "poolSize": 95,
@@ -48,20 +48,28 @@
     "enabled": true,
     "list": [
       {
-        "ip": "51.254.210.64",
-        "port": 18124
+        "ip": "46.101.85.231",
+        "port": 18101
       },
       {
-        "ip": "51.254.210.69",
-        "port": 18124
+        "ip": "128.199.116.31",
+        "port": 18101
       },
       {
-        "ip": "139.59.179.52",
-        "port": 18124
+        "ip": "178.62.214.30",
+        "port": 18101
       },
       {
-        "ip": "146.185.158.174",
-        "port": 18124
+        "ip": "138.197.204.108",
+        "port": 18101
+      },
+      {
+        "ip": "104.236.67.20",
+        "port": 18101
+      },
+      {
+        "ip": "46.101.74.24",
+        "port": 18101
       }
     ],
     "access": {
@@ -89,8 +97,7 @@
   },
   "forging": {
     "force": false,
-    "secret": [
-    ],
+    "secret": [],
     "access": {
       "whiteList": [
         "127.0.0.1"
@@ -104,7 +111,7 @@
   "ssl": {
     "enabled": false,
     "options": {
-      "port": 10001,
+      "port": 18102,
       "address": "0.0.0.0",
       "key": "./ssl/lwf.key",
       "cert": "./ssl/lwf.crt"
@@ -115,5 +122,5 @@
     "masterpassword": "r7iQKsQwy6zJ",
     "autoexec": []
   },
-  "nethash": "704f232786a9bff25d0630c06abbc34957448ba6309d6dcef949cf9a6f43954a"
+  "nethash": "c16656e85880df9a41abed0aa13b2987b0d853adadc91cbc7e5c8332ea37ccc9"
 }
