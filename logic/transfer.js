@@ -14,6 +14,11 @@ var modules;
 // Constructor
 function Transfer () {}
 
+Transfer.prototype.dbTable = 'transfers';
+Transfer.prototype.dbFields = [
+	'note',
+	'transactionId'
+];
 // Public methods
 /**
  * Binds input parameters to private variable modules.
@@ -67,6 +72,13 @@ Transfer.prototype.verify = function (trs, sender, cb) {
 		return setImmediate(cb, 'Invalid transaction amount');
 	}
 
+	if (trs.asset && trs.asset.note) {
+		var len = Buffer.byteLength(trs.asset.note, 'utf8');
+		if (len > 64) {
+			return setImmediate(cb, 'Invalid length for text note');
+		}
+	}
+
 	return setImmediate(cb, null, trs);
 };
 
@@ -85,7 +97,11 @@ Transfer.prototype.process = function (trs, sender, cb) {
  * @return {null}
  */
 Transfer.prototype.getBytes = function (trs) {
-	return null;
+	if (!trs.asset || !trs.asset.note) {
+		return null;
+	}
+
+	return Buffer.from(trs.asset.note, 'utf8');
 };
 
 /**
@@ -169,7 +185,7 @@ Transfer.prototype.undoUnconfirmed = function (trs, sender, cb) {
 };
 
 /**
- * Deletes blockId from transaction 
+ * Deletes blockId from transaction
  * @param {transaction} trs
  * @return {transaction}
  */
@@ -183,7 +199,7 @@ Transfer.prototype.objectNormalize = function (trs) {
  * @return {null}
  */
 Transfer.prototype.dbRead = function (raw) {
-	return null;
+	return {note: raw.tr_note};
 };
 
 /**
@@ -191,14 +207,23 @@ Transfer.prototype.dbRead = function (raw) {
  * @return {null}
  */
 Transfer.prototype.dbSave = function (trs) {
-	return null;
+	var note = trs.asset ? trs.asset.note : null;
+
+	return {
+		table: this.dbTable,
+		fields: this.dbFields,
+		values: {
+			note: note,
+			transactionId: trs.id
+		}
+	};
 };
 
 /**
  * Checks sender multisignatures and transaction signatures.
  * @param {transaction} trs
  * @param {account} sender
- * @return {boolean} True if transaction signatures greather than 
+ * @return {boolean} True if transaction signatures greather than
  * sender multimin or there are not sender multisignatures.
  */
 Transfer.prototype.ready = function (trs, sender) {
