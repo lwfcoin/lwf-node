@@ -249,6 +249,28 @@ __private.getById = function (id, cb) {
 };
 
 /**
+ * Gets note by transaction id from `transfers` table.
+ * @private
+ * @param {transaction} transaction
+ * @param {function} cb - Callback function.
+ * @returns {setImmediateCallback} error | data: {note}
+ */
+__private.getNoteById = function (transaction, cb) {
+	library.db.query('SELECT * from transfers where "transactionId" = ${id}', {id: transaction.id})
+	.then(function (rows) {
+		if (!rows.length) {
+			return setImmediate(cb, 'Transaction not found: ' + transaction.id);
+		}
+
+		transaction.asset = {note: rows[0].note};
+		return setImmediate(cb, null, transaction);
+	}).catch(function (err) {
+		library.logger.error(err.stack);
+		return setImmediate(cb, 'Transactions#getNoteById error');
+	});
+};
+
+/**
  * Gets votes by transaction id from `votes` table.
  * @private
  * @param {transaction} transaction
@@ -661,7 +683,11 @@ Transactions.prototype.shared = {
 					return setImmediate(cb, 'Transaction not found');
 				}
 
-				if (transaction.type === 3) {
+				if (transaction.type === 0) {
+					__private.getNoteById(transaction, function (err, transaction) {
+						return setImmediate(cb, null, {transaction: transaction});
+					});
+				} else if (transaction.type === 3) {
 					__private.getVotesById(transaction, function (err, transaction) {
 						return setImmediate(cb, null, {transaction: transaction});
 					});
