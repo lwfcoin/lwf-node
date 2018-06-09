@@ -234,7 +234,7 @@ function install_wallet {
           rm -rf public/
       fi
 
-      git clone -b $GIT_BRANCH $GIT_ROOT/lwf-wallet public &>> $logfile || { echo -n "Could not clone git wallet source. Exiting." && exit 1; }
+      git clone -b master $GIT_ROOT/lwf-wallet public &>> $logfile || { echo -n "Could not clone git wallet source. Exiting." && exit 1; }
       cd public && npm install &>> $logfile || { echo -n "Could not install web wallet node modules. Exiting." && exit 1; }
 
       npm run grunt-release &>> $logfile || { echo -e "\n\nCould not build web wallet release. Exiting." && exit 1; }
