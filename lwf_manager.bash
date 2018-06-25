@@ -249,21 +249,21 @@ function install_wallet {
 }
 
 update_client() {
+    echo "Updating LWF client..."
 
     if [[ -f config.json ]]; then
-        cp $root_path/config.json $root_path/config.json.bak
+        cp -i $root_path/config.json $root_path/config.json.bak
     fi
 
-    echo "Updating LWF client..."
     cd $root_path
     git checkout . &>> $logfile || { echo "Failed to checkout latest status. See $logfile for more information." && exit 1; }
     git pull &>> $logfile || { echo "Failed to fetch new files from git. See $logfile for more information. Exiting." && exit 1; }
     npm install --production &>> $logfile || { echo "Could not install node modules. See $logfile for more information. Exiting." && exit 1; }
 
     if [[ -f config.json.bak ]]; then
-      echo -n "Take over config.json entries from previous installation... "
-      node $root_path/updateConfig.js -o $root_path/config.json.bak -n $root_path/config.json
-      echo "√"
+      echo "Take over config.json entries from previous installation... "
+      node $root_path/updateConfig.js -o $root_path/config.json.bak -n $root_path/config.json && \
+      rm -f $root_path/config.json.bak
     fi
 
     return 0;
