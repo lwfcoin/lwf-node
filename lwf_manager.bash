@@ -86,13 +86,13 @@ ntp_checks() {
         sudo ntpdate pool.ntp.org &>> $logfile
         sudo service ntp start &>> $logfile
         if ! sudo pgrep -x "ntpd" > /dev/null; then
-          echo -e "LWF requires NTP running. Please check /etc/ntp.conf and correct any issues. Exiting."
+          echo "LWF requires NTP running. Please check /etc/ntp.conf and correct any issues. Exiting."
           exit 1
         echo -e "done.\n"
         fi # if sudo pgrep
       fi # if [[ ! -f "/proc/user_beancounters" ]]
     elif [[ -f "/proc/user_beancounters" ]]; then
-      echo -e "Running OpenVZ or LXC VM, NTP is not required, done. \n"
+      echo -e "Running OpenVZ or LXC VM, NTP is not required, done.\n"
     fi
 }
 
@@ -126,7 +126,7 @@ download_blockchain() {
             echo "√ Blockchain snapshot downloaded successfully."
         fi
     else
-        echo -e "√ Using this Awesome Snapshot."
+        echo "√ Using this Awesome Snapshot."
     fi
 }
 
@@ -140,9 +140,9 @@ restore_blockchain() {
         exit 1
     else
       if [[ -f $DB_SNAPSHOT ]]; then
-        echo -e "√ Using Local Snapshot."
+        echo "√ Using Local Snapshot."
       else
-        echo -e "X No local snapshot found. I will exit now.."
+        echo "X No local snapshot found. Exiting."
         exit 1;
       fi
     fi
@@ -179,8 +179,8 @@ add_pg_user_database() {
 
 start_postgres() {
 
-    installed=$(dpkg -l |grep postgresql |grep ii |head -n1 |wc -l);
-    running=$(ps aux |grep "bin\/postgres" |wc -l);
+    installed=$(dpkg -l | grep postgresql | grep ii | head -n1 | wc -l);
+    running=$(ps aux | grep "bin\/postgres" | wc -l);
 
     if [[ $installed -ne 1 ]]; then
         echo "Postgres is not installed. Install postgres manually before continuing. Exiting."
@@ -231,7 +231,7 @@ function install_wallet {
       echo -n "Installing wallet... "
 
       if [[ -d "public" ]]; then
-          echo -e "Found an existing public folder. Will remove it now.."
+          echo "Found an existing public folder. Will remove it now.."
           rm -rf public/
       fi
 
@@ -239,11 +239,11 @@ function install_wallet {
       cd public && npm install &>> $logfile || { echo -n "Could not install web wallet node modules. Exiting." && exit 1; }
 
       npm run grunt-release &>> $logfile || { echo -e "\n\nCould not build web wallet release. Exiting." && exit 1; }
-      echo -e "Done."
-      echo -e "---- PLEASE RELOAD YOUR NODE ----"
+      echo "Done."
+      echo "---- PLEASE RELOAD YOUR NODE ----"
 
   else
-      echo -e "Directory $root_path does not exist! Nothing to install.."
+      echo "Directory $root_path does not exist! Nothing to install.."
       exit 1;
     fi
 }
@@ -254,25 +254,23 @@ update_client() {
         cp $root_path/config.json $root_path/config.json.bak
     fi
 
-    echo -n "Updating LWF client..."
-
-    echo -e "Updating LWF client..."
+    echo "Updating LWF client..."
     cd $root_path
     git checkout . &>> $logfile || { echo "Failed to checkout latest status. See $logfile for more information." && exit 1; }
     git pull &>> $logfile || { echo "Failed to fetch new files from git. See $logfile for more information. Exiting." && exit 1; }
     npm install --production &>> $logfile || { echo "Could not install node modules. See $logfile for more information. Exiting." && exit 1; }
 
     if [[ -f config.json.bak ]]; then
-      echo -n "Take over config.json entries from previous installation ... "
+      echo -n "Take over config.json entries from previous installation... "
       node $root_path/updateConfig.js -o $root_path/config.json.bak -n $root_path/config.json
-      echo "done."
+      echo "√"
     fi
 
     return 0;
 }
 
 stop_lwf() {
-    echo -n "Stopping LWF..."
+    echo -n "Stopping LWF... "
     forever_exists=$(whereis forever | awk {'print $2'})
     if [[ ! -z $forever_exists ]]; then
         $forever_exists stop $root_path/app.js &>> $logfile
@@ -286,7 +284,7 @@ stop_lwf() {
 }
 
 start_lwf() {
-    echo -n "Starting LWF..."
+    echo -n "Starting LWF... "
     forever_exists=$(whereis forever | awk {'print $2'})
     if [[ ! -z $forever_exists ]]; then
         $forever_exists start -o $root_path/logs/lwfcoin.log -e $root_path/logs/lwfcoin-err.log app.js &>> $logfile || \
