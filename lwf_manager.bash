@@ -86,7 +86,7 @@ ntp_checks() {
         sudo ntpdate pool.ntp.org &>> $logfile
         sudo service ntp start &>> $logfile
         if ! sudo pgrep -x "ntpd" > /dev/null; then
-          echo -e "lwf requires NTP running. Please check /etc/ntp.conf and correct any issues. Exiting."
+          echo -e "LWF requires NTP running. Please check /etc/ntp.conf and correct any issues. Exiting."
           exit 1
         echo -e "done.\n"
         fi # if sudo pgrep
@@ -97,13 +97,14 @@ ntp_checks() {
 }
 
 create_database() {
-    res=$(sudo -u postgres dropdb --if-exists "$DB_NAME" 2> /dev/null)
-    res=$(sudo -u postgres createdb -O "$DB_UNAME" "$DB_NAME" 2> /dev/null)
-    res=$(sudo -u postgres psql -t -c "SELECT count(*) FROM pg_database where datname='$DB_NAME'" 2> /dev/null)
+    sudo -u postgres dropdb --if-exists "$DB_NAME" 2> /dev/null
+    if [[ $? -ne 0 ]]; then
+      echo "X Failed to drop Postgresql database."
+      exit 1
+    fi
 
-    if [[ $res -eq 1 ]]; then
-      echo "√ Postgresql database created successfully."
-    else
+    sudo -u postgres createdb -O "$DB_UNAME" "$DB_NAME" 2> /dev/null
+    if [[ $? -ne 0 ]]; then
       echo "X Failed to create Postgresql database."
       exit 1
     fi
@@ -211,8 +212,8 @@ install_node_npm() {
 
 install_lwf() {
 
-    echo -n "Installing lwf core..."
-    npm install --production &>> $logfile || { echo "Could not install lwf, please check the log directory. Exiting." && exit 1; }
+    echo -n "Installing LWF core..."
+    npm install --production &>> $logfile || { echo "Could not install LWF, please check the log directory. Exiting." && exit 1; }
     echo -e "done.\n"
 
     return 0;
@@ -222,7 +223,7 @@ install_lwf() {
 # ---------------------
 function install_wallet {
   cd $HOME
-    
+
     ## Check if directory exists
     if [ -d "$root_path" ]; then
       cd $root_path
@@ -253,9 +254,9 @@ update_client() {
         cp $root_path/config.json $root_path/config.json.bak
     fi
 
-    echo -n "Updating lwf client..."
+    echo -n "Updating LWF client..."
 
-    echo -e "Updating lwf client..."
+    echo -e "Updating LWF client..."
     cd $root_path
     git checkout . &>> $logfile || { echo "Failed to checkout latest status. See $logfile for more information." && exit 1; }
     git pull &>> $logfile || { echo "Failed to fetch new files from git. See $logfile for more information. Exiting." && exit 1; }
@@ -271,32 +272,31 @@ update_client() {
 }
 
 stop_lwf() {
-    echo -n "Stopping lwf..."
+    echo -n "Stopping LWF..."
     forever_exists=$(whereis forever | awk {'print $2'})
     if [[ ! -z $forever_exists ]]; then
         $forever_exists stop $root_path/app.js &>> $logfile
     fi
 
+    echo "√"
     if ! running; then
-        echo "OK"
         return 0
     fi
-
     return 1
 }
 
 start_lwf() {
-    echo -n "Starting lwf..."
+    echo -n "Starting LWF..."
     forever_exists=$(whereis forever | awk {'print $2'})
     if [[ ! -z $forever_exists ]]; then
         $forever_exists start -o $root_path/logs/lwfcoin.log -e $root_path/logs/lwfcoin-err.log app.js &>> $logfile || \
-        { echo -e "\nCould not start lwf." && exit 1; }
+        { echo -e "\nCould not start LWF." && exit 1; }
     fi
 
     sleep 1
 
+    echo "√"
     if running; then
-        echo "OK"
         return 0
     fi
     return 1
@@ -351,7 +351,7 @@ case $1 in
       install_lwf
       echo ""
       echo ""
-      echo "lwf successfully installed"
+      echo "LWF successfully installed"
     ;;
     "install_wallet")
       install_wallet
@@ -388,10 +388,10 @@ case $1 in
     ;;
     "status")
       if running; then
-        echo "√ lwf is running."
+        echo "√ LWF is running."
         show_blockHeight
       else
-        echo "X lwf is NOT running."
+        echo "X LWF is NOT running."
       fi
     ;;
     "start")
