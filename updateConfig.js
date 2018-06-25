@@ -26,6 +26,10 @@ if (program.new) {
 	newConfig = JSON.parse(fs.readFileSync(program.new, 'utf8'));
 	newConfig = extend(true, {}, newConfig, oldConfig);
 
+	if (!newConfig.forging.secret[0]) {
+		console.log("WARNING: Secret passphrase not found. Please set your passphrase (config.json) if you wish to continue forging new blocks.")
+	}
+
 	fs.writeFile(program.new, JSON.stringify(newConfig, null, 2), function (err) {
 		if (err) {
 			throw err;
