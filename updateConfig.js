@@ -26,7 +26,7 @@ if (program.new) {
 	newConfig = JSON.parse(fs.readFileSync(program.new, 'utf8'));
 	newConfig = extend(true, {}, newConfig, oldConfig);
 
-	fs.writeFile(program.new, JSON.stringify(newConfig, null, 4), function (err) {
+	fs.writeFile(program.new, JSON.stringify(newConfig, null, 2), function (err) {
 		if (err) {
 			throw err;
 		}
