@@ -196,25 +196,25 @@ start_postgres() {
 
 install_node_npm() {
 
-    echo -n "Installing nodejs and npm..."
+    echo -n "Installing nodejs and npm... "
     curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash - &>> $logfile
     sudo apt-get install -y -qq nodejs &>> $logfile || { echo "Could not install nodejs and npm. Exiting." && exit 1; }
-    echo -e "done.\n" && echo -n "Installing grunt-cli... "
+    echo -e "√\n" && echo -n "Installing grunt-cli... "
     sudo npm install grunt-cli -g &>> $logfile || { echo "Could not install grunt-cli. Exiting." && exit 1; }
-    echo -e "done.\n" && echo -n "Installing bower... "
+    echo -e "√\n" && echo -n "Installing bower... "
     sudo npm install bower -g &>> $logfile || { echo "Could not install bower. Exiting." && exit 1; }
-    echo -e "done.\n" && echo -n "Installing process management software... "
-    sudo npm install forever -g &>> $logfile || { echo "Could not install process management software(forever). Exiting." && exit 1; }
-    echo -e "done.\n"
+    echo -e "√\n" && echo -n "Installing process management software... "
+    sudo npm install pm2@latest -g &>> $logfile || { echo "Could not install process management software(pm2). Exiting." && exit 1; }
+    echo -e "√\n"
 
     return 0;
 }
 
 install_lwf() {
 
-    echo -n "Installing LWF core..."
+    echo -n "Installing LWF core... "
     npm install --production &>> $logfile || { echo "Could not install LWF, please check the log directory. Exiting." && exit 1; }
-    echo -e "done.\n"
+    echo -e "√\n"
 
     return 0;
 }
@@ -271,12 +271,16 @@ update_client() {
 
 stop_lwf() {
     echo -n "Stopping LWF... "
-    forever_exists=$(whereis forever | awk {'print $2'})
-    if [[ ! -z $forever_exists ]]; then
-        $forever_exists stop $root_path/app.js &>> $logfile
+
+    pm=$(which pm2)
+    if [[ -z $pm ]]; then
+      echo "pm2 is not installed. Exiting." && exit 1
     fi
 
+    $pm stop $root_path/app.js &>> $logfile
+
     echo "√"
+
     if ! running; then
         return 0
     fi
@@ -285,27 +289,36 @@ stop_lwf() {
 
 start_lwf() {
     echo -n "Starting LWF... "
-    forever_exists=$(whereis forever | awk {'print $2'})
-    if [[ ! -z $forever_exists ]]; then
-        $forever_exists start -o $root_path/logs/lwfcoin.log -e $root_path/logs/lwfcoin-err.log app.js &>> $logfile || \
-        { echo -e "\nCould not start LWF." && exit 1; }
+
+    pm=$(which pm2)
+    if [[ -z $pm ]]; then
+      echo "pm2 is not installed. Exiting." && exit 1
     fi
+
+    $pm start app.js --name lwf-node -o $root_path/logs/lwfcoin.log -e $root_path/logs/lwfcoin-err.log &>> $logfile || \
+    { echo "Could not start LWF." && exit 1; }
 
     sleep 1
 
     echo "√"
+
     if running; then
         return 0
     fi
     return 1
 }
 
-
 running() {
-    process=$(forever list |grep app.js |awk {'print $9'})
-    if [[ -z $process ]] || [[ "$process" == "STOPPED" ]]; then
+    pm=$(which pm2)
+    if [[ -z $pm ]]; then
+      echo "pm2 is not installed. Exiting." && exit 1
+    fi
+
+    pid=$(pm2 pid lwf-node)
+    if [[ -z $pid ]]; then
         return 1
     fi
+
     return 0
 }
 
