@@ -47,7 +47,8 @@ function DelegatesHttpApi (delegatesModule, app, logger, cache) {
 		'get /fee': 'getFee',
 		'get /forging/getForgedByAccount': 'getForgedByAccount',
 		'put /': 'addDelegate',
-		'get /getNextForgers': 'getNextForgers'
+		'get /getNextForgers': 'getNextForgers',
+		'get /getForgers': 'getForgers'
 	});
 
 	router.map(delegatesModule.internal, {
