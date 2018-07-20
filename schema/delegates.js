@@ -106,6 +106,29 @@ module.exports = {
 			}
 		}
 	},
+	getForgers: {
+		id: 'delegates.getForgers',
+		type: 'object',
+		properties: {
+			orderBy: {
+				type: 'string'
+			},
+			limit: {
+				type: 'integer',
+				minimum: 1,
+				maximum: constants.activeDelegates
+			},
+			offset: {
+				type: 'integer',
+				minimum: 0
+			},
+			status: {
+				type: 'integer',
+				minimum: 0,
+				maximum: 5
+			}
+		}
+	},
 	getFee: {
 		id: 'delegates.getFee',
 		type: 'object',
