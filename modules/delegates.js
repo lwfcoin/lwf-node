@@ -433,6 +433,35 @@ Delegates.prototype.getDelegates = function (query, cb) {
 };
 
 /**
+ * Gets the next delegates.
+ * @param {Object} query
+ * @param {function} cb - Callback function.
+ * @returns {setImmediateCallback} error| object with delegates ordered, offset, count, limit.
+ */
+Delegates.prototype.getNextForgers = function (query, cb) {
+	var currentBlock = modules.blocks.lastBlock.get();
+	var limit = query.limit || 10;
+
+	modules.delegates.generateDelegateList(currentBlock.height, function (err, activeDelegates) {
+		if (err) {
+			return setImmediate(cb, err);
+		}
+
+		var currentBlockSlot = slots.getSlotNumber(currentBlock.timestamp);
+		var currentSlot = slots.getSlotNumber();
+		var nextForgers = [];
+
+		for (var i = 1; i <= slots.delegates && i <= limit; i++) {
+			if (activeDelegates[(currentSlot + i) % slots.delegates]) {
+				nextForgers.push (activeDelegates[(currentSlot + i) % slots.delegates]);
+			}
+		}
+
+		return setImmediate(cb, null, {currentBlock: currentBlock.height, currentBlockSlot: currentBlockSlot, currentSlot: currentSlot, delegates: nextForgers});
+	});
+};
+
+/**
  * @param {publicKey} publicKey
  * @param {Array} votes
  * @param {function} cb
@@ -733,26 +762,7 @@ Delegates.prototype.shared = {
 	},
 
 	getNextForgers: function (req, cb) {
-		var currentBlock = modules.blocks.lastBlock.get();
-		var limit = req.body.limit || 10;
-
-		modules.delegates.generateDelegateList(currentBlock.height, function (err, activeDelegates) {
-			if (err) {
-				return setImmediate(cb, err);
-			}
-
-			var currentBlockSlot = slots.getSlotNumber(currentBlock.timestamp);
-			var currentSlot = slots.getSlotNumber();
-			var nextForgers = [];
-
-			for (var i = 1; i <= slots.delegates && i <= limit; i++) {
-				if (activeDelegates[(currentSlot + i) % slots.delegates]) {
-					nextForgers.push (activeDelegates[(currentSlot + i) % slots.delegates]);
-				}
-			}
-
-			return setImmediate(cb, null, {currentBlock: currentBlock.height, currentBlockSlot: currentBlockSlot, currentSlot: currentSlot, delegates: nextForgers});
-		});
+		modules.delegates.getNextForgers(req.body, cb);
 	},
 
 	search: function (req, cb) {
@@ -774,7 +784,7 @@ Delegates.prototype.shared = {
 
 			library.db.query(sql.search({
 				q: req.body.q,
-				limit: req.body.limit || 101,
+				limit: req.body.limit || 201,
 				sortField: orderBy.sortField,
 				sortMethod: orderBy.sortMethod
 			})).then(function (rows) {
@@ -867,6 +877,146 @@ Delegates.prototype.shared = {
 
 				return setImmediate(cb, null, {delegates: delegates, totalCount: data.count});
 			});
+		});
+	},
+
+	getForgers: function (req, cb) {
+		async.waterfall([
+			function (wtCb) {
+				library.schema.validate(req.body, schema.getForgers, function (err) {
+					if (err) {
+						return setImmediate(wtCb, err[0].message);
+					}
+
+					return setImmediate(wtCb);
+				});
+			},
+			function (wtCb) {
+				library.db.one(sql.count).then(function (row) {
+					var count = row.count;
+					if(!count){
+						return setImmediate(wtCb, 'No delegates found.');
+					}
+					return setImmediate(wtCb, null, count);
+				});
+			},
+			function (count, wtCb) {
+				async.parallel({
+					delegates: function (pcb) {
+						var orderBy = OrderBy(
+							req.body.orderBy, {
+								sortFields: sql.sortFields,
+								sortField: 'vote',
+								sortMethod: 'DESC'
+							}
+						);
+			
+						if (orderBy.error) {
+							return setImmediate(pcb, orderBy.error);
+						}
+			
+						var limit = req.body.limit || constants.activeDelegates;
+						var offset = req.body.offset || 0;
+			
+						var realLimit = Math.min(offset + limit, count);
+			
+						library.db.query(sql.getForgers({
+							limit: realLimit,
+							offset: offset,
+							sortField: orderBy.sortField,
+							sortMethod: orderBy.sortMethod
+						})).then(function (delegates) {
+							return setImmediate(pcb, null, {
+								delegates: delegates,
+								totalCount: count,
+								offset: offset,
+								limit: realLimit
+							});
+						}).catch(function (err) {
+							library.logger.error(err.stack);
+							return setImmediate(pcb, 'Database search failed');
+						});
+					},
+					nextForgers: function (pcb) {
+						modules.delegates.getNextForgers({ limit: constants.activeDelegates }, pcb);
+					}
+				}, function (err, results) {
+					if(err) {
+						return setImmediate(wtCb, err);
+					}
+
+					var lastBlock = modules.blocks.lastBlock.get();
+					var nextForgers = results.nextForgers;
+					var delegates = results.delegates;
+
+					var getRound = function (height) {
+						return Math.floor(height / constants.activeDelegates) + (height % constants.activeDelegates > 0 ? 1 : 0);
+					}
+
+					var currentRound = getRound(lastBlock.height);
+					var roundDelegates = nextForgers.delegates.filter((delegate, index) => {
+						return currentRound === getRound(lastBlock.height + index + 1);
+					});
+
+					async.each(delegates.delegates, function (delegate, ecb) {
+						library.db.query(sql.getLastBlockByGeneratorPublicKey,{
+							generatorPublicKey: delegate.publicKey
+						}).then(function (rows) {
+							var isRoundDelegate = roundDelegates.indexOf(delegate.publicKey) !== -1;
+
+							if (rows && rows.length) {
+								var block = rows[0];
+
+								delegate.blockAt = block.timestamp;
+								delegate.blockHeight = block.height;
+								
+								var delegateRound = getRound(delegate.blockHeight);
+								var delegateAwaitingSlot = currentRound - delegateRound;
+
+								if (delegateAwaitingSlot === 0) {
+									// Forged block in current round
+									delegate.forging_status = 0;
+								} else if (!isRoundDelegate && delegateAwaitingSlot === 1) {
+									// Missed block in current round
+									delegate.forging_status = 1;
+								} else if (!isRoundDelegate && delegateAwaitingSlot > 1) {
+									// Missed block in current and last round = not forging
+									delegate.forging_status = 2;
+								} else if (delegateAwaitingSlot === 1) {
+									// Awaiting slot, but forged in last round
+									delegate.forging_status = 3;
+								} else if (delegateAwaitingSlot === 2) {
+									// Awaiting slot, but missed block in last round
+									delegate.forging_status = 4;
+								} else {
+									// Not Forging
+									delegate.forging_status = 2;
+								}
+							} else { // For delegates which not forged a signle block yet (statuses 0,3,5 not apply here)
+								if (!isRoundDelegate && delegate.missedblocks === 1) {
+									// Missed block in current round
+									delegate.forging_status = 1;
+								} else if (delegate.missedblocks > 1) {
+									// Missed more than 1 block = not forging
+									delegate.forging_status = 2;
+								} else if (delegate.missedblocks === 1) {
+									// Missed block in previous round
+									delegate.forging_status = 4;
+								}
+							}
+
+							return setImmediate(ecb, null);
+						})
+					}, function() {
+						return setImmediate(wtCb, null, delegates);
+					});
+				});
+			}
+		], function (err, result) {
+			if (err) {
+				return setImmediate(cb, err);
+			}
+			return setImmediate(cb, null, result);
 		});
 	},
 
