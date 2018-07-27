@@ -692,11 +692,11 @@ Transactions.prototype.shared = {
 			},
 			function (res, waterCb) {
 				async.each(res.transactions, function (transaction, cb) {
-					if(transaction.type !== 0) cb();
+					if(transaction.type !== 0) return cb();
 
 					__private.getNoteById(transaction, function(r){
 						transaction = r;
-						cb();
+						return cb();
 					});
 				}, function (err) {
 					return setImmediate(waterCb, err, res)
