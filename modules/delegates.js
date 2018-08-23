@@ -973,6 +973,7 @@ Delegates.prototype.shared = {
 					}
 
 					var lastBlock = modules.blocks.lastBlock.get();
+					var totalSupply = __private.blockReward.calcSupply(lastBlock.height);
 					var nextForgers = results.nextForgers;
 					var delegates = results.delegates;
 
@@ -986,7 +987,17 @@ Delegates.prototype.shared = {
 					});
 
 					async.each(delegates.delegates, function (delegate, ecb) {
-						library.db.query(sql.getLastBlockByGeneratorPublicKey,{
+						// CALCULATE APPROVAL %
+						delegate.approval = (delegate.vote / totalSupply) * 100;
+						delegate.approval = Math.round(delegate.approval * 1e2) / 1e2;
+
+						if(delegate.rank > constants.activeDelegates){
+							delegate.forging_status = 6; // STAND BY
+							return setImmediate(ecb);
+						}
+
+						// GET DELEGATE's LAST BLOCK DATA
+						library.db.query(sql.getLastBlockByGeneratorPublicKey, {
 							generatorPublicKey: delegate.publicKey
 						}).then(function (rows) {
 							var isRoundDelegate = roundDelegates.indexOf(delegate.publicKey) !== -1;
@@ -1032,8 +1043,11 @@ Delegates.prototype.shared = {
 								}
 							}
 
-							return setImmediate(ecb, null);
-						})
+							return setImmediate(ecb);
+						}).catch(function(err) {
+							library.logger.error(err.stack);
+							return setImmediate(ecb);
+						});
 					}, function() {
 						return setImmediate(wtCb, null, delegates);
 					});
