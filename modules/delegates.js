@@ -928,7 +928,7 @@ Delegates.prototype.shared = {
 						})).then(function (delegates) {
 							return setImmediate(pcb, null, {
 								delegates: delegates,
-								count: count,
+								totalCount: count,
 								offset: offset,
 								limit: realLimit
 							});
@@ -946,6 +946,7 @@ Delegates.prototype.shared = {
 					}
 
 					var lastBlock = modules.blocks.lastBlock.get();
+					var totalSupply = __private.blockReward.calcSupply(lastBlock.height);
 					var nextForgers = results.nextForgers;
 					var delegates = results.delegates;
 
@@ -959,16 +960,27 @@ Delegates.prototype.shared = {
 					});
 
 					async.each(delegates.delegates, function (delegate, ecb) {
-						library.db.query(sql.getLastBlockByGeneratorPublicKey,{
+						// CALCULATE APPROVAL %
+						delegate.approval = (delegate.vote / totalSupply) * 100;
+						delegate.approval = Math.round(delegate.approval * 1e2) / 1e2;
+
+						if(delegate.rank > constants.activeDelegates){
+							delegate.forging_status = 6; // STAND BY
+							return setImmediate(ecb);
+						}
+
+						// GET DELEGATE's LAST BLOCK DATA
+						library.db.query(sql.getLastBlockByGeneratorPublicKey, {
 							generatorPublicKey: delegate.publicKey
-						}).then(function (row) {
-							if(row && row.length){
-								var block = row[0];
+						}).then(function (rows) {
+							var isRoundDelegate = roundDelegates.indexOf(delegate.publicKey) !== -1;
+
+							if (rows && rows.length) {
+								var block = rows[0];
 
 								delegate.blockAt = block.timestamp;
 								delegate.blockHeight = block.height;
-
-								var isRoundDelegate = roundDelegates.indexOf(delegate.publicKey) !== -1;
+								
 								var delegateRound = getRound(delegate.blockHeight);
 								var delegateAwaitingSlot = currentRound - delegateRound;
 
@@ -987,11 +999,11 @@ Delegates.prototype.shared = {
 								} else if (delegateAwaitingSlot === 2) {
 									// Awaiting slot, but missed block in last round
 									delegate.forging_status = 4;
-								// } else if (!status.blockAt || !status.updatedAt) {
-								// 	// Awaiting status or unprocessed
-								// 	delegate.forging_status = 5;
-								// For delegates which not forged a signle block yet (statuses 0,3,5 not apply here)
-								} else if (!delegate.blockAt /*&& delegate.updatedAt*/) {
+								} else {
+									// Not Forging
+									delegate.forging_status = 2;
+								}
+							} else { // For delegates which not forged a signle block yet (statuses 0,3,5 not apply here)
 								if (!isRoundDelegate && delegate.missedblocks === 1) {
 									// Missed block in current round
 									delegate.forging_status = 1;
@@ -1002,16 +1014,13 @@ Delegates.prototype.shared = {
 									// Missed block in previous round
 									delegate.forging_status = 4;
 								}
-								} else {
-									// Not Forging
-									delegate.forging_status = 2;
-								}
-							} else {
-								delegate.forging_status = 5;
 							}
 
-							return setImmediate(ecb, null);
-						})
+							return setImmediate(ecb);
+						}).catch(function(err) {
+							library.logger.error(err.stack);
+							return setImmediate(ecb);
+						});
 					}, function() {
 						return setImmediate(wtCb, null, delegates);
 					});
