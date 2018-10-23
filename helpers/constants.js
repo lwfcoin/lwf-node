@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-	currentVersion: "0.1.5",
+	currentVersion: "0.1.6",
 	minVersion: [
 		{ height: 1,      ver: "^0.1.0" },
 		{ height: 669400, ver: "^0.1.1"}
