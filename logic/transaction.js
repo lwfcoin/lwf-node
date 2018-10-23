@@ -10,6 +10,8 @@ var extend = require('extend');
 var slots = require('../helpers/slots.js');
 var sql = require('../sql/transactions.js');
 
+const UINT64_MAX = new bignum('18446744073709551615');
+
 // Private fields
 var self, modules, __private = {};
 
@@ -199,6 +201,12 @@ Transaction.prototype.getBytes = function (trs, skipSignature, skipSecondSignatu
 		throw 'Unknown transaction type ' + trs.type;
 	}
 
+	const recipientLeadingZeroExceptions = exceptions.recipientLeadingZero
+			? exceptions.recipientLeadingZero : {};
+
+	const recipientExceedingUint64Exceptions = exceptions.recipientExceedingUint64
+			? exceptions.recipientExceedingUint64 : {};
+
 	var bb;
 
 	try {
@@ -223,11 +231,35 @@ Transaction.prototype.getBytes = function (trs, skipSignature, skipSecondSignatu
 		}
 
 		if (trs.recipientId) {
-			var recipient = trs.recipientId.slice(0, -3);
-			recipient = new bignum(recipient).toBuffer({size: 8});
+			const recipientString = trs.recipientId.slice(0, -3);
+			const recipientNumber = new bignum(recipientString);
+
+			if (recipientLeadingZeroExceptions[trs.id]) {
+				if (transaction.recipientId !== recipientLeadingZeroExceptions[trs.id]) {
+					throw `Recipient address ${trs.recipientId} does not match the one fixed in exception: ${
+						recipientLeadingZeroExceptions[trs.id]
+					}`;
+				}
+			} else if (recipientString !== recipientNumber.toString(10)) {
+				throw 'Recipient address number does not have natural represenation'; // e.g. leading 0s
+			}
+
+			if (recipientExceedingUint64Exceptions[trs.id]) {
+				if (trs.recipientId !== recipientExceedingUint64Exceptions[trs.id]) {
+					throw `Recipient address ${trs.recipientId} does not match the one fixed in exception: ${
+						recipientExceedingUint64Exceptions[trs.id]
+					}`;
+				}
+			} else if (recipientNumber.greaterThan(UINT64_MAX)) {
+				throw 'Recipient address number exceeds uint64 range';
+			}
+
+			// For numbers exceeding the uint64 range, this produces 16 bytes.
+			// This behaviour must be preserved to verify legacy data
+			const recipientSerialized = recipientNumber.toBuffer({ size: 8 });
 
 			for (i = 0; i < 8; i++) {
-				bb.writeByte(recipient[i] || 0);
+				bb.writeByte(recipientSerialized[i] || 0);
 			}
 		} else {
 			for (i = 0; i < 8; i++) {

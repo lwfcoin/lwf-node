@@ -9,7 +9,7 @@
  * @property {Strin[]} signatures
  * @property {Strin[]} multisignatures
  * @property {Strin[]} votes
- */	
+ */
 module.exports = {
 	blockRewards: [],
 	genesisPublicKey: {
@@ -27,5 +27,11 @@ module.exports = {
 	balance: [
 	],
 	votes: [
-	]
+	],
+	recipientLeadingZero: {
+		'11934453666979715752': '047408453282627335LWF'
+	},
+	recipientExceedingUint64: {
+		'14920858127005236085': '113248536291843921374LWF'
+	}
 };
