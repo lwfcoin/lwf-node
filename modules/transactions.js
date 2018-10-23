@@ -34,7 +34,7 @@ __private.assetTypes = {};
  * @return {setImmediateCallback} Callback function with `self` as data.
  */
 // Constructor
-function Transactions (cb, scope) {
+function Transactions(cb, scope) {
 	library = {
 		logger: scope.logger,
 		db: scope.db,
@@ -77,23 +77,23 @@ __private.list = function (filter, cb) {
 	var params = {};
 	var where = [];
 	var allowedFieldsMap = {
-		blockId:             '"t_blockId" = ${blockId}',
-		senderPublicKey:     '"t_senderPublicKey" = DECODE (${senderPublicKey}, \'hex\')',
-		recipientPublicKey:  '"m_recipientPublicKey" = DECODE (${recipientPublicKey}, \'hex\')',
-		senderId:            '"t_senderId" = ${senderId}',
-		recipientId:         '"t_recipientId" = ${recipientId}',
-		fromHeight:          '"b_height" >= ${fromHeight}',
-		toHeight:            '"b_height" <= ${toHeight}',
-		fromTimestamp:       '"t_timestamp" >= ${fromTimestamp}',
-		toTimestamp:         '"t_timestamp" <= ${toTimestamp}',
-		senderIds:           '"t_senderId" IN (${senderIds:csv})',
-		recipientIds:        '"t_recipientId" IN (${recipientIds:csv})',
-		senderPublicKeys:    'ENCODE ("t_senderPublicKey", \'hex\') IN (${senderPublicKeys:csv})',
+		blockId: '"t_blockId" = ${blockId}',
+		senderPublicKey: '"t_senderPublicKey" = DECODE (${senderPublicKey}, \'hex\')',
+		recipientPublicKey: '"m_recipientPublicKey" = DECODE (${recipientPublicKey}, \'hex\')',
+		senderId: '"t_senderId" = ${senderId}',
+		recipientId: '"t_recipientId" = ${recipientId}',
+		fromHeight: '"b_height" >= ${fromHeight}',
+		toHeight: '"b_height" <= ${toHeight}',
+		fromTimestamp: '"t_timestamp" >= ${fromTimestamp}',
+		toTimestamp: '"t_timestamp" <= ${toTimestamp}',
+		senderIds: '"t_senderId" IN (${senderIds:csv})',
+		recipientIds: '"t_recipientId" IN (${recipientIds:csv})',
+		senderPublicKeys: 'ENCODE ("t_senderPublicKey", \'hex\') IN (${senderPublicKeys:csv})',
 		recipientPublicKeys: 'ENCODE ("m_recipientPublicKey", \'hex\') IN (${recipientPublicKeys:csv})',
-		minAmount:           '"t_amount" >= ${minAmount}',
-		maxAmount:           '"t_amount" <= ${maxAmount}',
-		type:                '"t_type" = ${type}',
-		minConfirmations:    'confirmations >= ${minConfirmations}',
+		minAmount: '"t_amount" >= ${minAmount}',
+		maxAmount: '"t_amount" <= ${maxAmount}',
+		type: '"t_type" = ${type}',
+		minConfirmations: 'confirmations >= ${minConfirmations}',
 		limit: null,
 		offset: null,
 		orderBy: null,
@@ -235,7 +235,9 @@ __private.list = function (filter, cb) {
  * @returns {setImmediateCallback} error | data: {transaction}
  */
 __private.getById = function (id, cb) {
-	library.db.query(sql.getById, {id: id}).then(function (rows) {
+	library.db.query(sql.getById, {
+		id: id
+	}).then(function (rows) {
 		if (!rows.length) {
 			return setImmediate(cb, 'Transaction not found: ' + id);
 		}
@@ -250,6 +252,32 @@ __private.getById = function (id, cb) {
 };
 
 /**
+ * Gets note by transaction id from `transfers` table.
+ * @private
+ * @param {transaction} transaction
+ * @param {function} cb - Callback function.
+ * @returns {setImmediateCallback} error | data: {note}
+ */
+__private.getNoteById = function (transaction, cb) {
+	library.db.query('SELECT * from transfers where "transactionId" = ${id}', {
+			id: transaction.id
+		})
+		.then(function (rows) {
+			if (!rows.length) {
+				return setImmediate(cb, 'Transaction not found: ' + transaction.id);
+			}
+
+			transaction.asset = {
+				note: rows[0].note
+			};
+			return setImmediate(cb, null, transaction);
+		}).catch(function (err) {
+			library.logger.error(err.stack);
+			return setImmediate(cb, 'Transactions#getNoteById error');
+		});
+};
+
+/**
  * Gets votes by transaction id from `votes` table.
  * @private
  * @param {transaction} transaction
@@ -257,7 +285,9 @@ __private.getById = function (id, cb) {
  * @returns {setImmediateCallback} error | data: {added, deleted}
  */
 __private.getVotesById = function (transaction, cb) {
-	library.db.query(sql.getVotesById, {id: transaction.id}).then(function (rows) {
+	library.db.query(sql.getVotesById, {
+		id: transaction.id
+	}).then(function (rows) {
 		if (!rows.length) {
 			return setImmediate(cb, 'Transaction not found: ' + transaction.id);
 		}
@@ -268,13 +298,16 @@ __private.getVotesById = function (transaction, cb) {
 
 		for (var i = 0; i < votes.length; i++) {
 			if (votes[i].substring(0, 1) === '+') {
-				added.push (votes[i].substring(1));
+				added.push(votes[i].substring(1));
 			} else if (votes[i].substring(0, 1) === '-') {
-				deleted.push (votes[i].substring(1));
+				deleted.push(votes[i].substring(1));
 			}
 		}
 
-		transaction.votes = {added: added, deleted: deleted};
+		transaction.votes = {
+			added: added,
+			deleted: deleted
+		};
 
 		return setImmediate(cb, null, transaction);
 	}).catch(function (err) {
@@ -303,7 +336,9 @@ __private.getPooledTransaction = function (method, req, cb) {
 			return setImmediate(cb, 'Transaction not found');
 		}
 
-		return setImmediate(cb, null, {transaction: transaction});
+		return setImmediate(cb, null, {
+			transaction: transaction
+		});
 	});
 };
 
@@ -337,7 +372,10 @@ __private.getPooledTransactions = function (method, req, cb) {
 			}
 		}
 
-		return setImmediate(cb, null, {transactions: toSend, count: transactions.length});
+		return setImmediate(cb, null, {
+			transactions: toSend,
+			count: transactions.length
+		});
 	});
 };
 
@@ -506,7 +544,9 @@ Transactions.prototype.applyUnconfirmed = function (transaction, sender, cb) {
 		return setImmediate(cb, 'Invalid block id');
 	} else {
 		if (transaction.requesterPublicKey) {
-			modules.accounts.getAccount({publicKey: transaction.requesterPublicKey}, function (err, requester) {
+			modules.accounts.getAccount({
+				publicKey: transaction.requesterPublicKey
+			}, function (err, requester) {
 				if (err) {
 					return setImmediate(cb, err);
 				}
@@ -534,7 +574,9 @@ Transactions.prototype.applyUnconfirmed = function (transaction, sender, cb) {
 Transactions.prototype.undoUnconfirmed = function (transaction, cb) {
 	library.logger.debug('Undoing unconfirmed transaction', transaction.id);
 
-	modules.accounts.getAccount({publicKey: transaction.senderPublicKey}, function (err, sender) {
+	modules.accounts.getAccount({
+		publicKey: transaction.senderPublicKey
+	}, function (err, sender) {
 		if (err) {
 			return setImmediate(cb, err);
 		}
@@ -642,8 +684,23 @@ Transactions.prototype.shared = {
 					if (err) {
 						return setImmediate(waterCb, 'Failed to get transactions: ' + err);
 					} else {
-						return setImmediate(waterCb, null, {transactions: data.transactions, count: data.count});
+						return setImmediate(waterCb, null, {
+							transactions: data.transactions,
+							count: data.count
+						});
 					}
+				});
+			},
+			function (res, waterCb) {
+				async.each(res.transactions, function (transaction, cb) {
+					if(transaction.type !== 0) cb();
+
+					__private.getNoteById(transaction, function(r){
+						transaction = r;
+						cb();
+					});
+				}, function (err) {
+					return setImmediate(waterCb, err, res)
 				});
 			}
 		], function (err, res) {
@@ -662,12 +719,22 @@ Transactions.prototype.shared = {
 					return setImmediate(cb, 'Transaction not found');
 				}
 
-				if (transaction.type === 3) {
+				if (transaction.type === 0) {
+					__private.getNoteById(transaction, function (err, transaction) {
+						return setImmediate(cb, null, {
+							transaction: transaction
+						});
+					});
+				} else if (transaction.type === 3) {
 					__private.getVotesById(transaction, function (err, transaction) {
-						return setImmediate(cb, null, {transaction: transaction});
+						return setImmediate(cb, null, {
+							transaction: transaction
+						});
 					});
 				} else {
-					return setImmediate(cb, null, {transaction: transaction});
+					return setImmediate(cb, null, {
+						transaction: transaction
+					});
 				}
 			});
 		});
@@ -725,7 +792,9 @@ Transactions.prototype.shared = {
 				}
 			}
 
-			var query = {address: req.body.recipientId};
+			var query = {
+				address: req.body.recipientId
+			};
 
 			library.balancesSequence.add(function (cb) {
 				modules.accounts.getAccount(query, function (err, recipient) {
@@ -740,7 +809,9 @@ Transactions.prototype.shared = {
 					}
 
 					if (req.body.multisigAccountPublicKey && req.body.multisigAccountPublicKey !== keypair.publicKey.toString('hex')) {
-						modules.accounts.getAccount({publicKey: req.body.multisigAccountPublicKey}, function (err, account) {
+						modules.accounts.getAccount({
+							publicKey: req.body.multisigAccountPublicKey
+						}, function (err, account) {
 							if (err) {
 								return setImmediate(cb, err);
 							}
@@ -757,7 +828,9 @@ Transactions.prototype.shared = {
 								return setImmediate(cb, 'Account does not belong to multisignature group');
 							}
 
-							modules.accounts.getAccount({publicKey: keypair.publicKey}, function (err, requester) {
+							modules.accounts.getAccount({
+								publicKey: keypair.publicKey
+							}, function (err, requester) {
 								if (err) {
 									return setImmediate(cb, err);
 								}
@@ -801,7 +874,9 @@ Transactions.prototype.shared = {
 							});
 						});
 					} else {
-						modules.accounts.setAccountAndGet({publicKey: keypair.publicKey.toString('hex')}, function (err, account) {
+						modules.accounts.setAccountAndGet({
+							publicKey: keypair.publicKey.toString('hex')
+						}, function (err, account) {
 							if (err) {
 								return setImmediate(cb, err);
 							}
@@ -845,7 +920,9 @@ Transactions.prototype.shared = {
 					return setImmediate(cb, err);
 				}
 
-				return setImmediate(cb, null, {transactionId: transaction[0].id});
+				return setImmediate(cb, null, {
+					transactionId: transaction[0].id
+				});
 			});
 		});
 	}
